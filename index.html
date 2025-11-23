@@ -28,14 +28,8 @@
       border-radius: 5px;
       overflow: hidden;
       color: #4a3c2d;
-    }
-
-    #inner {
-      padding: 30px 40px;
-      height: calc(100% - 60px);
-      overflow-y: auto;
-      line-height: 1.8;
-      font-size: 1.05em;
+      display: flex;
+      flex-direction: column;
     }
 
     h2 {
@@ -46,30 +40,55 @@
       text-align: center;
     }
 
-    .choice, .start-link {
+    #inner {
+      padding: 24px 40px;
+      flex: 1 1 auto;
+      overflow-y: auto;
+      line-height: 1.8;
+      font-size: 1.05em;
+      position: relative;
+    }
+
+    #story {
+      text-align: left;
+    }
+
+    .choice {
       color: #6d4c41;
       font-weight: bold;
       text-decoration: underline;
       cursor: pointer;
       transition: color 0.2s ease;
     }
-    .choice:hover, .start-link:hover { color: #c59f63; }
-
-    .start-link {
-      display: block;
-      margin: 20px auto;
-      font-size: 1.2em;
-      text-align: center;
-    }
+    .choice:hover { color: #c59f63; }
 
     .illustration {
       max-width: 30%;
       height: auto;
-      margin: 40px auto;
+      margin: 16px auto 24px;
       display: block;
       border: 1px solid #d7ccc8;
       box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
     }
+
+    .footer {
+      position: sticky;
+      bottom: 16px;
+      text-align: center;
+      padding-top: 8px;
+      background: transparent;
+    }
+    .footer .start-link {
+      display: inline-block;
+      margin: 0;
+      font-size: 1.1em;
+      color: #6d4c41;
+      font-weight: bold;
+      text-decoration: underline;
+      cursor: pointer;
+      transition: color 0.2s ease;
+    }
+    .footer .start-link:hover { color: #c59f63; }
   </style>
 </head>
 <body>
@@ -77,6 +96,7 @@
     <h2 id="title">【開始】</h2>
     <div id="inner">
       <div id="story"></div>
+      <div id="footer" class="footer"></div>
     </div>
   </div>
 
@@ -84,6 +104,7 @@
     const storyFile = "final_gamebook.txt";
     let paragraphs = [];
     let currentIndex = null;
+    let originalTitle = "【開始】";
 
     const numberLine = /^\s*(\d{1,4})\s*$/;
     const linkifyPatterns = [
@@ -94,9 +115,10 @@
       .then(res => res.text())
       .then(text => {
         const lines = text.split(/\r?\n/);
-        let titleLine = lines.find(l => l.startsWith("# "));
+        const titleLine = lines.find(l => l.startsWith("# "));
         if (titleLine) {
           const titleText = titleLine.replace(/^#\s*/, "");
+          originalTitle = titleText;
           document.getElementById("title").textContent = titleText;
           document.title = titleText;
         }
@@ -136,6 +158,7 @@
       }
       html = html.replace(/\n/g, "<br>");
       const storyEl = document.getElementById("story");
+      const footerEl = document.getElementById("footer");
       storyEl.innerHTML = html;
 
       storyEl.querySelectorAll(".choice").forEach(el => {
@@ -151,22 +174,26 @@
       });
 
       if (storyEl.querySelectorAll(".choice").length === 0) {
-        storyEl.innerHTML += `<br><br><span class="start-link">はじめへ</span>`;
-        storyEl.querySelector(".start-link").onclick = () => {
-          showStart();
-        };
+        footerEl.innerHTML = `<span class="start-link" id="toStart">はじめへ</span>`;
+        document.getElementById("toStart").onclick = () => showStart();
+      } else {
+        footerEl.innerHTML = "";
       }
     }
 
     function showStart() {
       currentIndex = null;
+      document.getElementById("title").textContent = originalTitle;
       const storyEl = document.getElementById("story");
+      const footerEl = document.getElementById("footer");
+
       storyEl.innerHTML =
-        `<img src="start.jpg" alt="冒険の始まり" class="illustration">
-         <span class="start-link">はじめる</span>`;
+        `<img src="start.jpg" alt="冒険の始まり" class="illustration">`;
+
+      footerEl.innerHTML = `<span class="start-link" id="begin">はじめる</span>`;
       document.getElementById("inner").scrollTop = 0;
 
-      storyEl.querySelector(".start-link").onclick = () => {
+      document.getElementById("begin").onclick = () => {
         currentIndex = 0;
         render();
       };
