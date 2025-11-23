@@ -36,7 +36,6 @@
       overflow-y: auto;
       line-height: 1.8;
       font-size: 1.05em;
-      text-align: center;
     }
 
     h2 {
@@ -53,11 +52,15 @@
       text-decoration: underline;
       cursor: pointer;
       transition: color 0.2s ease;
+    }
+    .choice:hover, .start-link:hover { color: #c59f63; }
+
+    .start-link {
       display: block;
       margin: 20px auto;
       font-size: 1.2em;
+      text-align: center;
     }
-    .choice:hover, .start-link:hover { color: #c59f63; }
 
     .illustration {
       max-width: 30%;
@@ -148,7 +151,7 @@
       });
 
       if (storyEl.querySelectorAll(".choice").length === 0) {
-        storyEl.innerHTML += `<span class="start-link">はじめへ</span>`;
+        storyEl.innerHTML += `<br><br><span class="start-link">はじめへ</span>`;
         storyEl.querySelector(".start-link").onclick = () => {
           showStart();
         };
