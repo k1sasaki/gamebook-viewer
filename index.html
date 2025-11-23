@@ -2,20 +2,49 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>ゲームブックビューア</title>
+  <title>古書風ゲームブック</title>
   <style>
-    body { font-family: sans-serif; line-height: 1.6; margin: 2em; }
-    #story { white-space: pre-wrap; margin-bottom: 2em; }
+    @import url('https://fonts.googleapis.com/css2?family=Yuji+Syuku&display=swap');
+    body {
+      background-color: #3e3225;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      font-family: 'Yuji Syuku', serif;
+    }
+    #book {
+      width: 80vw;
+      max-width: 900px;
+      height: 80vh;
+      max-height: 600px;
+      background-color: #fdf5e6;
+      border: 5px solid #5d4037;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      border-radius: 5px;
+      overflow: hidden;
+      padding: 30px 40px;
+      color: #4a3c2d;
+      line-height: 1.8;
+    }
+    h2 {
+      color: #8d6e63;
+      border-bottom: 2px dotted #bcaaa4;
+      margin-top: 0;
+    }
     #controls { margin-top: 1em; }
     button { padding: 0.5em 1em; margin: 0 0.5em; }
   </style>
 </head>
 <body>
-  <h1>ゲームブックビューア</h1>
-  <div id="story">読み込み中...</div>
-  <div id="controls">
-    <button id="prev" disabled>前へ</button>
-    <button id="next" disabled>次へ</button>
+  <div id="book">
+    <h2 id="title">読み込み中...</h2>
+    <div id="story"></div>
+    <div id="controls">
+      <button id="prev" disabled>前へ</button>
+      <button id="next" disabled>次へ</button>
+    </div>
   </div>
 
   <script>
@@ -23,36 +52,50 @@
     let paragraphs = [];
     let current = 0;
 
-    // テキストを読み込む
+    // 段落番号行の判定
+    const numberLine = /^\s*(\d+)\s*(?:[.:])?(?:\s+.*)?$/;
+
     fetch(storyFile)
       .then(res => res.text())
       .then(text => {
-        // 改行で分割
-        paragraphs = text.split(/\n+/).filter(p => p.trim() !== "");
+        paragraphs = parseParagraphs(text);
         current = 0;
-        showParagraph();
+        render();
         document.getElementById("next").disabled = false;
       });
 
-    function showParagraph() {
-      document.getElementById("story").textContent = paragraphs[current];
-      document.getElementById("prev").disabled = (current === 0);
-      document.getElementById("next").disabled = (current === paragraphs.length - 1);
+    function parseParagraphs(text) {
+      const lines = text.split(/\r?\n/);
+      const result = [];
+      let pending = null;
+
+      for (const line of lines) {
+        const m = line.match(numberLine);
+        if (m) {
+          if (pending) result.push(pending);
+          pending = { num: m[1], text: "" };
+        } else if (pending) {
+          pending.text += line + "\n";
+        }
+      }
+      if (pending) result.push(pending);
+      return result;
     }
 
-    document.getElementById("prev").addEventListener("click", () => {
-      if (current > 0) {
-        current--;
-        showParagraph();
-      }
-    });
+    function render() {
+      const p = paragraphs[current];
+      document.getElementById("title").textContent = "段落 " + p.num;
+      document.getElementById("story").textContent = p.text.trim();
+      document.getElementById("prev").disabled = current === 0;
+      document.getElementById("next").disabled = current === paragraphs.length - 1;
+    }
 
-    document.getElementById("next").addEventListener("click", () => {
-      if (current < paragraphs.length - 1) {
-        current++;
-        showParagraph();
-      }
-    });
+    document.getElementById("prev").onclick = () => {
+      if (current > 0) { current--; render(); }
+    };
+    document.getElementById("next").onclick = () => {
+      if (current < paragraphs.length - 1) { current++; render(); }
+    };
   </script>
 </body>
 </html>
