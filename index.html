@@ -1,5 +1,36 @@
 <!DOCTYPE html>
 <html lang="ja">
-<head><meta charset="UTF-8"><title>仮のビュアー</title></head>
-<body><h1>ここに物語が表示されます</h1></body>
+<head>
+  <meta charset="UTF-8">
+  <title>ゲームブックビューア</title>
+  <style>
+    body { font-family: sans-serif; line-height: 1.6; margin: 2em; }
+    #story { white-space: pre-wrap; }
+    img { max-width: 100%; margin-top: 1em; }
+  </style>
+</head>
+<body>
+  <h1>ゲームブックビューア</h1>
+  <div id="story">読み込み中...</div>
+  <img id="illustration" alt="挿絵">
+
+  <script>
+    // 固定ファイル名を決め打ち
+    const storyFile = "final_gamebook.txt";
+    const imageFile = "start.jpg";
+
+    // 物語テキストを読み込む
+    fetch(storyFile)
+      .then(res => res.text())
+      .then(text => {
+        document.getElementById("story").textContent = text;
+      })
+      .catch(err => {
+        document.getElementById("story").textContent = "物語を読み込めませんでした: " + err;
+      });
+
+    // 挿絵を表示
+    document.getElementById("illustration").src = imageFile;
+  </script>
+</body>
 </html>
