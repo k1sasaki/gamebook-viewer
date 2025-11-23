@@ -47,18 +47,21 @@
       text-align: center;
     }
 
-    .choice {
-      color: #a1887f;
+    .choice, .start-link {
+      color: #6d4c41;
       font-weight: bold;
       text-decoration: underline;
       cursor: pointer;
       transition: color 0.2s ease;
+      display: block;
+      margin: 20px auto;
+      font-size: 1.2em;
     }
-    .choice:hover { color: #c59f63; }
+    .choice:hover, .start-link:hover { color: #c59f63; }
 
     .illustration {
-      width: 300px;   /* 横幅を固定 */
-      height: auto;   /* 縦は比率維持 */
+      max-width: 30%;
+      height: auto;
       margin: 40px auto;
       display: block;
       border: 1px solid #d7ccc8;
@@ -77,7 +80,7 @@
   <script>
     const storyFile = "final_gamebook.txt";
     let paragraphs = [];
-    let currentIndex = null; // null = 開始ページ
+    let currentIndex = null;
 
     const numberLine = /^\s*(\d{1,4})\s*$/;
     const linkifyPatterns = [
@@ -92,7 +95,7 @@
         if (titleLine) {
           const titleText = titleLine.replace(/^#\s*/, "");
           document.getElementById("title").textContent = titleText;
-          document.title = titleText; // ブラウザタブに反映
+          document.title = titleText;
         }
         paragraphs = parseParagraphs(text);
         showStart();
@@ -107,7 +110,7 @@
         const m = line.match(numberLine);
         if (m) {
           if (pending) result.push(pending);
-          pending = { num: m[1], text: "" }; // ← padStartなし
+          pending = { num: m[1], text: "" };
         } else if (pending) {
           pending.text += line + "\n";
         }
@@ -144,10 +147,9 @@
         };
       });
 
-      // 行き先がない段落なら「はじめへ」リンクを追加
       if (storyEl.querySelectorAll(".choice").length === 0) {
-        storyEl.innerHTML += `<br><br><span class="choice" data-target="start">はじめへ</span>`;
-        storyEl.querySelector(".choice[data-target='start']").onclick = () => {
+        storyEl.innerHTML += `<span class="start-link">はじめへ</span>`;
+        storyEl.querySelector(".start-link").onclick = () => {
           showStart();
         };
       }
@@ -157,11 +159,11 @@
       currentIndex = null;
       const storyEl = document.getElementById("story");
       storyEl.innerHTML =
-        `<img src="start.jpg" alt="冒険の始まり" class="illustration"><br><span class="choice" data-target="start">はじめる</span>`;
+        `<img src="start.jpg" alt="冒険の始まり" class="illustration">
+         <span class="start-link">はじめる</span>`;
       document.getElementById("inner").scrollTop = 0;
 
-      // 「はじめる」クリックで最初の段落へ
-      storyEl.querySelector(".choice").onclick = () => {
+      storyEl.querySelector(".start-link").onclick = () => {
         currentIndex = 0;
         render();
       };
