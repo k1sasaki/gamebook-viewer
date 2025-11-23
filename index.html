@@ -32,7 +32,7 @@
 
     #inner {
       padding: 30px 40px;
-      height: calc(100% - 80px); /* タイトル＋コントロール分を差し引く */
+      height: calc(100% - 60px);
       overflow-y: auto;
       line-height: 1.8;
       font-size: 1.05em;
@@ -45,28 +45,6 @@
       padding-bottom: 6px;
     }
 
-    #controls {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 12px;
-      padding: 10px 0 16px;
-    }
-
-    button {
-      padding: 0.4em 1em;
-      font-size: 0.95em;
-      border: 1px solid #8d6e63;
-      background: #f3e2c7;
-      color: #4a3c2d;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
     .choice {
       color: #a1887f;
       font-weight: bold;
@@ -75,58 +53,46 @@
       transition: color 0.2s ease;
     }
     .choice:hover { color: #c59f63; }
+
+    .illustration {
+      max-width: 60%;
+      height: auto;
+      float: right;
+      margin-left: 20px;
+      margin-bottom: 10px;
+      border: 1px solid #d7ccc8;
+      box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+    }
   </style>
 </head>
 <body>
   <div id="book" aria-live="polite">
-    <h2 id="title">読み込み中...</h2>
+    <h2 id="title">【開始】</h2>
     <div id="inner">
-      <div id="story"></div>
-    </div>
-    <div id="controls">
-      <button id="prev" disabled>前へ</button>
-      <button id="next" disabled>次へ</button>
+      <!-- 開始時点の挿絵 -->
+      <img src="start.jpg" alt="冒険の始まり" class="illustration">
+      <div id="story">読み込み中...</div>
     </div>
   </div>
 
   <script>
-    // 外部テキストファイル名
     const storyFile = "final_gamebook.txt";
-
-    // 段落配列 { num: "001", text: "…" }
     let paragraphs = [];
     let currentIndex = 0;
 
-    // 段落番号行の判定（数字だけの行／前後空白のみ許容）
     const numberLine = /^\s*(\d{1,4})\s*$/;
-
-    // 本文内のリンク表現を検出して choice に変換（日本語の揺れを吸収）
-    // 例: 「12へ」「29に進む」「45へ進む」「88に行く」「101へ向かう」など
     const linkifyPatterns = [
       /(\d{1,4})(?:へ|に進む|へ進む|に行く|に向かう|へ向かう|へ向けて|に向けて)/g
     ];
 
-    // 読み込み
     fetch(storyFile)
-      .then(res => {
-        if (!res.ok) throw new Error("テキストの読み込みに失敗しました");
-        return res.text();
-      })
+      .then(res => res.text())
       .then(text => {
         paragraphs = parseParagraphs(text);
-        if (paragraphs.length === 0) {
-          throw new Error("段落が見つかりません。final_gamebook.txt の形式をご確認ください。");
-        }
         currentIndex = 0;
         render();
-        document.getElementById("next").disabled = false;
-      })
-      .catch(err => {
-        document.getElementById("title").textContent = "読み込みエラー";
-        document.getElementById("story").textContent = err.message;
       });
 
-    // テキストを段落に分割
     function parseParagraphs(text) {
       const lines = text.split(/\r?\n/);
       const result = [];
@@ -135,92 +101,67 @@
       for (const line of lines) {
         const m = line.match(numberLine);
         if (m) {
-          // 新しい段落番号行
           if (pending) result.push(pending);
-          pending = { num: m[1].padStart(3, "0"), text: "" };
-        } else {
-          // 本文行：段落が始まっていれば追加
-          if (pending) {
-            pending.text += (line + "\n");
-          }
+          pending = { num: m[1].padStart(3,"0"), text: "" };
+        } else if (pending) {
+          pending.text += line + "\n";
         }
       }
       if (pending) result.push(pending);
       return result;
     }
 
-    // 段落描画（本文の「数字リンク」をクリック可能にする）
     function render() {
       const p = paragraphs[currentIndex];
       if (!p) return;
 
-      document.getElementById("title").textContent = "段落 " + p.num;
+      document.getElementById("title").textContent = `【${p.num}】`;
 
-      // 本文をリンク化
       let html = escapeHTML(p.text.trim());
-
       for (const pattern of linkifyPatterns) {
         html = html.replace(pattern, (match, num) => {
           const target = normalizeNum(num);
           return `<span class="choice" data-target="${target}">${match}</span>`;
         });
       }
-
-      // 段落内の改行を <br> に
       html = html.replace(/\n/g, "<br>");
-
       const storyEl = document.getElementById("story");
       storyEl.innerHTML = html;
 
-      // イベント付与
       storyEl.querySelectorAll(".choice").forEach(el => {
-        el.addEventListener("click", () => {
+        el.onclick = () => {
           const targetNum = el.getAttribute("data-target");
           const idx = paragraphs.findIndex(pg => pg.num === targetNum);
           if (idx >= 0) {
             currentIndex = idx;
             render();
-            // 上までスクロール
             document.getElementById("inner").scrollTop = 0;
-          } else {
-            alert(`段落 ${targetNum} が見つかりません`);
           }
-        });
+        };
       });
 
-      // コントロール更新
-      document.getElementById("prev").disabled = currentIndex === 0;
-      document.getElementById("next").disabled = currentIndex >= paragraphs.length - 1;
+      // 行き先がない段落なら「開始に戻る」リンクを追加
+      if (storyEl.querySelectorAll(".choice").length === 0) {
+        storyEl.innerHTML += `<br><br><span class="choice" data-target="start">【開始に戻る】</span>`;
+        storyEl.querySelector(".choice[data-target='start']").onclick = () => {
+          showStart();
+        };
+      }
     }
 
-    // 前後ボタン
-    document.getElementById("prev").addEventListener("click", () => {
-      if (currentIndex > 0) {
-        currentIndex--;
-        render();
-        document.getElementById("inner").scrollTop = 0;
-      }
-    });
-    document.getElementById("next").addEventListener("click", () => {
-      if (currentIndex < paragraphs.length - 1) {
-        currentIndex++;
-        render();
-        document.getElementById("inner").scrollTop = 0;
-      }
-    });
+    function showStart() {
+      document.getElementById("title").textContent = "【開始】";
+      document.getElementById("story").innerHTML =
+        `<img src="start.jpg" alt="冒険の始まり" class="illustration">`;
+      document.getElementById("inner").scrollTop = 0;
+    }
 
-    // ユーティリティ
     function normalizeNum(n) {
-      // "7" -> "007" など、3桁にそろえて比較しやすくする（最大4桁まで拡張可）
       const s = String(n);
-      return s.length >= 3 ? s : s.padStart(3, "0");
+      return s.length >= 3 ? s : s.padStart(3,"0");
     }
-
     function escapeHTML(str) {
-      return str
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;");
+      return str.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
     }
   </script>
 </body>
