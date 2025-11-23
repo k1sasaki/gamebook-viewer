@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>ゲームブックビューア</title>
+  <style>
+    body { font-family: sans-serif; line-height: 1.6; margin: 2em; }
+    #story { white-space: pre-wrap; margin-bottom: 2em; }
+    #controls { margin-top: 1em; }
+    button { padding: 0.5em 1em; margin: 0 0.5em; }
+  </style>
+</head>
+<body>
+  <h1>ゲームブックビューア</h1>
+  <div id="story">読み込み中...</div>
+  <div id="controls">
+    <button id="prev" disabled>前へ</button>
+    <button id="next" disabled>次へ</button>
+  </div>
+
+  <script>
+    const storyFile = "final_gamebook.txt";
+    let paragraphs = [];
+    let current = 0;
+
+    // テキストを読み込む
+    fetch(storyFile)
+      .then(res => res.text())
+      .then(text => {
+        // 改行で分割
+        paragraphs = text.split(/\n+/).filter(p => p.trim() !== "");
+        current = 0;
+        showParagraph();
+        document.getElementById("next").disabled = false;
+      });
+
+    function showParagraph() {
+      document.getElementById("story").textContent = paragraphs[current];
+      document.getElementById("prev").disabled = (current === 0);
+      document.getElementById("next").disabled = (current === paragraphs.length - 1);
+    }
+
+    document.getElementById("prev").addEventListener("click", () => {
+      if (current > 0) {
+        current--;
+        showParagraph();
+      }
+    });
+
+    document.getElementById("next").addEventListener("click", () => {
+      if (current < paragraphs.length - 1) {
+        current++;
+        showParagraph();
+      }
+    });
+  </script>
+</body>
+</html>
