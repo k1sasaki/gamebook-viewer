@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>古書風ゲームブック</title>
+  <title id="docTitle">ゲームブック</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Yuji+Syuku&display=swap');
@@ -36,6 +36,7 @@
       overflow-y: auto;
       line-height: 1.8;
       font-size: 1.05em;
+      text-align: center;
     }
 
     h2 {
@@ -43,6 +44,7 @@
       border-bottom: 2px dotted #bcaaa4;
       margin: 16px 40px 0;
       padding-bottom: 6px;
+      text-align: center;
     }
 
     .choice {
@@ -55,11 +57,10 @@
     .choice:hover { color: #c59f63; }
 
     .illustration {
-      max-width: 60%;
+      max-width: 50%;
       height: auto;
-      float: right;
-      margin-left: 20px;
-      margin-bottom: 10px;
+      margin: 20px auto;
+      display: block;
       border: 1px solid #d7ccc8;
       box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
     }
@@ -69,16 +70,14 @@
   <div id="book" aria-live="polite">
     <h2 id="title">【開始】</h2>
     <div id="inner">
-      <!-- 開始時点の挿絵 -->
-      <img src="start.jpg" alt="冒険の始まり" class="illustration">
-      <div id="story">読み込み中...</div>
+      <div id="story"></div>
     </div>
   </div>
 
   <script>
     const storyFile = "final_gamebook.txt";
     let paragraphs = [];
-    let currentIndex = 0;
+    let currentIndex = null; // null = 開始ページ
 
     const numberLine = /^\s*(\d{1,4})\s*$/;
     const linkifyPatterns = [
@@ -88,9 +87,15 @@
     fetch(storyFile)
       .then(res => res.text())
       .then(text => {
+        const lines = text.split(/\r?\n/);
+        let titleLine = lines.find(l => l.startsWith("# "));
+        if (titleLine) {
+          const titleText = titleLine.replace(/^#\s*/, "");
+          document.getElementById("title").textContent = titleText;
+          document.title = titleText; // ブラウザタブに反映
+        }
         paragraphs = parseParagraphs(text);
-        currentIndex = 0;
-        render();
+        showStart();
       });
 
     function parseParagraphs(text) {
@@ -140,9 +145,9 @@
         };
       });
 
-      // 行き先がない段落なら「開始に戻る」リンクを追加
+      // 行き先がない段落なら「はじめへ」リンクを追加
       if (storyEl.querySelectorAll(".choice").length === 0) {
-        storyEl.innerHTML += `<br><br><span class="choice" data-target="start">【開始に戻る】</span>`;
+        storyEl.innerHTML += `<br><br><span class="choice" data-target="start">はじめへ</span>`;
         storyEl.querySelector(".choice[data-target='start']").onclick = () => {
           showStart();
         };
@@ -150,10 +155,17 @@
     }
 
     function showStart() {
-      document.getElementById("title").textContent = "【開始】";
-      document.getElementById("story").innerHTML =
-        `<img src="start.jpg" alt="冒険の始まり" class="illustration">`;
+      currentIndex = null;
+      const storyEl = document.getElementById("story");
+      storyEl.innerHTML =
+        `<img src="start.jpg" alt="冒険の始まり" class="illustration"><br><span class="choice" data-target="001">はじめる</span>`;
       document.getElementById("inner").scrollTop = 0;
+
+      // 「はじめる」クリックで最初の段落へ
+      storyEl.querySelector(".choice").onclick = () => {
+        currentIndex = 0;
+        render();
+      };
     }
 
     function normalizeNum(n) {
