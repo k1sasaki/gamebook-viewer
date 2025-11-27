@@ -30,6 +30,7 @@
       color: #4a3c2d;
       display: flex;
       flex-direction: column;
+      position: relative;
     }
 
     h2 {
@@ -49,9 +50,7 @@
       position: relative;
     }
 
-    #story {
-      text-align: left;
-    }
+    #story { text-align: left; }
 
     .choice {
       color: #6d4c41;
@@ -76,7 +75,7 @@
       bottom: 16px;
       left: 0;
       width: 100%;
-      text-align: center; /* はじめへを中央に */
+      text-align: center;
     }
 
     .footer .start-link {
@@ -91,7 +90,7 @@
     .footer .start-link:hover { color: #c59f63; }
 
     .footer .info-link {
-      position: absolute;   /* フッター内で右下に固定 */
+      position: absolute;
       right: 16px;
       bottom: 0;
       font-size: 1.0em;
@@ -101,6 +100,45 @@
       transition: color 0.2s ease;
     }
     .footer .info-link:hover { color: #c59f63; }
+
+    /* モーダル */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0; top: 0;
+      width: 100%; height: 100%;
+      background-color: rgba(0,0,0,0.6);
+    }
+    .modal-content {
+      background-color: #fdf5e6;
+      margin: 5% auto;
+      padding: 20px;
+      border: 3px solid #5d4037;
+      width: 80%;
+      max-width: 700px;
+      height: 70%;
+      overflow: hidden;
+      border-radius: 6px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      position: relative;
+    }
+    .modal-frame {
+      width: 100%;
+      height: 100%;
+      border: none;
+      overflow-y: auto;
+    }
+    .close {
+      position: absolute;
+      top: 8px;
+      right: 12px;
+      font-size: 1.5em;
+      font-weight: bold;
+      color: #6d4c41;
+      cursor: pointer;
+    }
+    .close:hover { color: #c59f63; }
   </style>
 </head>
 <body>
@@ -110,119 +148,155 @@
       <div id="story"></div>
       <div id="footer" class="footer">
         <!-- はじめへはJSで必要な場面で追加される -->
-        <a href="rules.html" class="info-link" target="_blank">ルール</a>
+        <a href="rules.html" class="info-link">ルール</a>
       </div>
     </div>
   </div>
 
-  <script>
-    const storyFile = "final_gamebook.txt";
-    let paragraphs = [];
-    let currentIndex = null;
-    let originalTitle = "【開始】";
+  <!-- ルールモーダル -->
+  <div id="rulesModal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <iframe src="rules.html" class="modal-frame"></iframe>
+    </div>
+  </div>
 
-    const numberLine = /^\s*(\d{1,4})\s*$/;
-    const linkifyPatterns = [
-      /(\d{1,4})(?:へ|に進む|へ進む|に行く|に向かう|へ向かう|へ向けて|に向けて)/g
-    ];
+	<script>
+	  const storyFile = "final_gamebook.txt";
+	  let paragraphs = [];
+	  let currentIndex = null;
+	  let originalTitle = "【開始】";
 
-    fetch(storyFile)
-      .then(res => res.text())
-      .then(text => {
-        const lines = text.split(/\r?\n/);
-        const titleLine = lines.find(l => l.startsWith("# "));
-        if (titleLine) {
-          const titleText = titleLine.replace(/^#\s*/, "");
-          originalTitle = titleText;
-          document.getElementById("title").textContent = titleText;
-          document.title = titleText;
-        }
-        paragraphs = parseParagraphs(text);
-        showStart();
-      });
+	  const numberLine = /^\s*(\d{1,4})\s*$/;
+	  const linkifyPatterns = [
+	    /(\d{1,4})(?:へ|に進む|へ進む|に行く|に向かう|へ向かう|へ向けて|に向けて)/g
+	  ];
 
-    function parseParagraphs(text) {
-      const lines = text.split(/\r?\n/);
-      const result = [];
-      let pending = null;
+	  fetch(storyFile)
+	    .then(res => res.text())
+	    .then(text => {
+	      const lines = text.split(/\r?\n/);
+	      const titleLine = lines.find(l => l.startsWith("# "));
+	      if (titleLine) {
+	        const titleText = titleLine.replace(/^#\s*/, "");
+	        originalTitle = titleText;
+	        document.getElementById("title").textContent = titleText;
+	        document.title = titleText;
+	      }
+	      paragraphs = parseParagraphs(text);
+	      showStart();
+	    });
 
-      for (const line of lines) {
-        const m = line.match(numberLine);
-        if (m) {
-          if (pending) result.push(pending);
-          pending = { num: m[1], text: "" };
-        } else if (pending) {
-          pending.text += line + "\n";
-        }
-      }
-      if (pending) result.push(pending);
-      return result;
-    }
+	  function parseParagraphs(text) {
+	    const lines = text.split(/\r?\n/);
+	    const result = [];
+	    let pending = null;
+	    for (const line of lines) {
+	      const m = line.match(numberLine);
+	      if (m) {
+	        if (pending) result.push(pending);
+	        pending = { num: m[1], text: "" };
+	      } else if (pending) {
+	        pending.text += line + "\n";
+	      }
+	    }
+	    if (pending) result.push(pending);
+	    return result;
+	  }
 
-    function render() {
-      const p = paragraphs[currentIndex];
-      if (!p) return;
+	  function render() {
+	    const p = paragraphs[currentIndex];
+	    if (!p) return;
 
-      document.getElementById("title").textContent = `【${p.num}】`;
+	    document.getElementById("title").textContent = `【${p.num}】`;
 
-      let html = escapeHTML(p.text.trim());
-      for (const pattern of linkifyPatterns) {
-        html = html.replace(pattern, (match, num) => {
-          return `<span class="choice" data-target="${num}">${match}</span>`;
-        });
-      }
-      html = html.replace(/\n/g, "<br>");
-      const storyEl = document.getElementById("story");
-      const footerEl = document.getElementById("footer");
-      storyEl.innerHTML = html;
+	    let html = escapeHTML(p.text.trim());
+	    for (const pattern of linkifyPatterns) {
+	      html = html.replace(pattern, (match, num) => {
+	        return `<span class="choice" data-target="${num}">${match}</span>`;
+	      });
+	    }
+	    html = html.replace(/\n/g, "<br>");
+	    const storyEl = document.getElementById("story");
+	    const footerEl = document.getElementById("footer");
+	    storyEl.innerHTML = html;
 
-      storyEl.querySelectorAll(".choice").forEach(el => {
-        el.onclick = () => {
-          const targetNum = el.getAttribute("data-target");
-          const idx = paragraphs.findIndex(pg => pg.num === targetNum);
-          if (idx >= 0) {
-            currentIndex = idx;
-            render();
-            document.getElementById("inner").scrollTop = 0;
-          }
-        };
-      });
+	    storyEl.querySelectorAll(".choice").forEach(el => {
+	      el.onclick = () => {
+	        const targetNum = el.getAttribute("data-target");
+	        const idx = paragraphs.findIndex(pg => pg.num === targetNum);
+	        if (idx >= 0) {
+	          currentIndex = idx;
+	          render();
+	          document.getElementById("inner").scrollTop = 0;
+	        }
+	      };
+	    });
 
-      if (storyEl.querySelectorAll(".choice").length === 0) {
-        footerEl.innerHTML = `
-          <span class="start-link" id="toStart">はじめへ</span>
-          <a href="rules.html" class="info-link" target="_blank">ルール</a>`;
-        document.getElementById("toStart").onclick = () => showStart();
-      } else {
-        // 選択肢がある場合も「ルール」は常設
-        footerEl.innerHTML = `
-          <a href="rules.html" class="info-link" target="_blank">ルール</a>`;
-      }
-    }
+	    if (storyEl.querySelectorAll(".choice").length === 0) {
+	      footerEl.innerHTML = `
+	        <span class="start-link" id="toStart">はじめへ</span>
+	        <a href="rules.html" class="info-link">ルール</a>`;
+	      document.getElementById("toStart").onclick = () => showStart();
+	    } else {
+	      footerEl.innerHTML = `<a href="rules.html" class="info-link">ルール</a>`;
+	    }
+	    attachModalHandler();
+	  }
 
-    function showStart() {
-      currentIndex = null;
-      document.getElementById("title").textContent = originalTitle;
-      const storyEl = document.getElementById("story");
-      const footerEl = document.getElementById("footer");
+	  function showStart() {
+	    currentIndex = null;
+	    document.getElementById("title").textContent = originalTitle;
+	    const storyEl = document.getElementById("story");
+	    const footerEl = document.getElementById("footer");
 
-      storyEl.innerHTML =
-        `<img src="start.jpg" alt="冒険の始まり" class="illustration">`;
+	    storyEl.innerHTML =
+	      `<img src="start.jpg" alt="冒険の始まり" class="illustration">`;
 
-      footerEl.innerHTML = `
-        <span class="start-link" id="begin">はじめる</span>
-        <a href="rules.html" class="info-link" target="_blank">ルール</a>`;
-      document.getElementById("inner").scrollTop = 0;
+	    footerEl.innerHTML = `
+	      <span class="start-link" id="begin">はじめる</span>
+	      <a href="rules.html" class="info-link">ルール</a>`;
 
-      document.getElementById("begin").onclick = () => {
-        currentIndex = 0;
-        render();
-      };
-    }
+	    document.getElementById("inner").scrollTop = 0;
 
-    function escapeHTML(str) {
-      return str.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-    }
-  </script>
+	    document.getElementById("begin").onclick = () => {
+	      currentIndex = 0;
+	      render();
+	    };
+	    attachModalHandler();
+	  }
+
+	  function escapeHTML(str) {
+	    return str.replace(/&/g,"&amp;")
+	              .replace(/</g,"&lt;")
+	              .replace(/>/g,"&gt;");
+	  }
+
+	  // モーダルの開閉処理
+	  function attachModalHandler() {
+	    const rulesLink = document.querySelector(".info-link");
+	    const modal = document.getElementById("rulesModal");
+	    const closeBtn = modal.querySelector(".close");
+
+	    if (rulesLink) {
+	      rulesLink.onclick = (e) => {
+	        e.preventDefault();
+	        modal.style.display = "block";
+	      };
+	    }
+	    if (closeBtn) {
+	      closeBtn.onclick = () => {
+	        modal.style.display = "none";
+	      };
+	    }
+	    window.onclick = (event) => {
+	      if (event.target === modal) {
+	        modal.style.display = "none";
+	      }
+	    };
+	  }
+	</script>
+
+
 </body>
 </html>
