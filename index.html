@@ -70,50 +70,51 @@
       border: 1px solid #d7ccc8;
       box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
     }
-	.footer {
-	  position: absolute;
-	  bottom: 16px;
-	  left: 0;
-	  width: 100%;
-	  text-align: center; /* はじめへを中央に */
-	}
 
-	.footer .start-link {
-	  display: inline-block;
-	  font-size: 1.1em;
-	  color: #6d4c41;
-	  text-decoration: underline;
-	  cursor: pointer;
-	  transition: color 0.2s ease;
-	}
-	.footer .start-link:hover { color: #c59f63; }
+    .footer {
+      position: absolute;
+      bottom: 16px;
+      left: 0;
+      width: 100%;
+      text-align: center; /* はじめへを中央に */
+    }
 
-	.footer .info-link {
-	  position: absolute;   /* フッター内で右下に固定 */
-	  right: 16px;
-	  bottom: 0;
-	  font-size: 1.0em;
-	  color: #6d4c41;
-	  text-decoration: underline;
-	  cursor: pointer;
-	  transition: color 0.2s ease;
-	}
-	.footer .info-link:hover { color: #c59f63; }
+    .footer .start-link {
+      display: inline-block;
+      font-size: 1.1em;
+      color: #6d4c41;
+      font-weight: bold;
+      text-decoration: underline;
+      cursor: pointer;
+      transition: color 0.2s ease;
+    }
+    .footer .start-link:hover { color: #c59f63; }
 
+    .footer .info-link {
+      position: absolute;   /* フッター内で右下に固定 */
+      right: 16px;
+      bottom: 0;
+      font-size: 1.0em;
+      color: #6d4c41;
+      text-decoration: underline;
+      cursor: pointer;
+      transition: color 0.2s ease;
+    }
+    .footer .info-link:hover { color: #c59f63; }
   </style>
 </head>
 <body>
   <div id="book" aria-live="polite">
     <h2 id="title">【開始】</h2>
-
     <div id="inner">
-	<div id="story"></div>
-	<div id="footer" class="footer">
-	  <span class="start-link" id="toStart">はじめへ</span>
-	      <a href="https://claude.ai/public/artifacts/c48c5caf-02ac-4133-abcf-9c369fabe448" class="info-link" target="_blank">戦い方</a>
-	</div>
+      <div id="story"></div>
+      <div id="footer" class="footer">
+        <!-- はじめへはJSで必要な場面で追加される -->
+        <a href="battle.html" class="info-link" target="_blank">戦い方</a>
+      </div>
     </div>
   </div>
+
   <script>
     const storyFile = "final_gamebook.txt";
     let paragraphs = [];
@@ -188,10 +189,14 @@
       });
 
       if (storyEl.querySelectorAll(".choice").length === 0) {
-        footerEl.innerHTML = `<span class="start-link" id="toStart">はじめへ</span>`;
+        footerEl.innerHTML = `
+          <span class="start-link" id="toStart">はじめへ</span>
+          <a href="battle.html" class="info-link" target="_blank">戦い方</a>`;
         document.getElementById("toStart").onclick = () => showStart();
       } else {
-        footerEl.innerHTML = "";
+        // 選択肢がある場合も「戦い方」は常設
+        footerEl.innerHTML = `
+          <a href="battle.html" class="info-link" target="_blank">戦い方</a>`;
       }
     }
 
@@ -204,7 +209,9 @@
       storyEl.innerHTML =
         `<img src="start.jpg" alt="冒険の始まり" class="illustration">`;
 
-      footerEl.innerHTML = `<span class="start-link" id="begin">はじめる</span>`;
+      footerEl.innerHTML = `
+        <span class="start-link" id="begin">はじめる</span>
+        <a href="battle.html" class="info-link" target="_blank">戦い方</a>`;
       document.getElementById("inner").scrollTop = 0;
 
       document.getElementById("begin").onclick = () => {
