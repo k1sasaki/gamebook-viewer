@@ -191,12 +191,12 @@
       if (storyEl.querySelectorAll(".choice").length === 0) {
         footerEl.innerHTML = `
           <span class="start-link" id="toStart">はじめへ</span>
-          <a href="rules.html" class="info-link" target="_blank">戦い方</a>`;
+          <a href="rules.html" class="info-link" target="_blank">ルール</a>`;
         document.getElementById("toStart").onclick = () => showStart();
       } else {
-        // 選択肢がある場合も「戦い方」は常設
+        // 選択肢がある場合も「ルール」は常設
         footerEl.innerHTML = `
-          <a href="rules.html" class="info-link" target="_blank">戦い方</a>`;
+          <a href="rules.html" class="info-link" target="_blank">ルール</a>`;
       }
     }
 
@@ -211,7 +211,7 @@
 
       footerEl.innerHTML = `
         <span class="start-link" id="begin">はじめる</span>
-        <a href="rules.html" class="info-link" target="_blank">戦い方</a>`;
+        <a href="rules.html" class="info-link" target="_blank">ルール</a>`;
       document.getElementById("inner").scrollTop = 0;
 
       document.getElementById("begin").onclick = () => {
