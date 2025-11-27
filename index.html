@@ -70,38 +70,48 @@
       border: 1px solid #d7ccc8;
       box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
     }
-    .footer {
-      position: absolute;
-      bottom: 16px;
-      left: 0;
-      width: 100%;
-      text-align: center;
-    }
+	.footer {
+	  position: absolute;
+	  bottom: 16px;
+	  left: 0;
+	  width: 100%;
+	  text-align: center; /* はじめへを中央に */
+	}
 
-    .footer .start-link {
-      display: inline-block;
-      margin-right: 20px; /* 少し間隔を空ける */
-    }
+	.footer .start-link {
+	  display: inline-block;
+	  font-size: 1.1em;
+	  color: #6d4c41;
+	  text-decoration: underline;
+	  cursor: pointer;
+	  transition: color 0.2s ease;
+	}
+	.footer .start-link:hover { color: #c59f63; }
 
-    .footer .info-link {
-      display: inline-block;
-      font-size: 1.0em;
-      color: #6d4c41;
-      text-decoration: underline;
-      cursor: pointer;
-      transition: color 0.2s ease;
-    }
-    .footer .info-link:hover { color: #c59f63; }
+	.footer .info-link {
+	  position: absolute;   /* フッター内で右下に固定 */
+	  right: 16px;
+	  bottom: 0;
+	  font-size: 1.0em;
+	  color: #6d4c41;
+	  text-decoration: underline;
+	  cursor: pointer;
+	  transition: color 0.2s ease;
+	}
+	.footer .info-link:hover { color: #c59f63; }
 
   </style>
 </head>
 <body>
   <div id="book" aria-live="polite">
     <h2 id="title">【開始】</h2>
+
     <div id="inner">
-      <div id="story"></div>
-      <div id="footer" class="footer"></div>
-      <a href="https://claude.ai/public/artifacts/c48c5caf-02ac-4133-abcf-9c369fabe448" class="info-link" target="_blank">戦い方</a>
+	<div id="story"></div>
+	<div id="footer" class="footer">
+	  <span class="start-link" id="toStart">はじめへ</span>
+	      <a href="https://claude.ai/public/artifacts/c48c5caf-02ac-4133-abcf-9c369fabe448" class="info-link" target="_blank">戦い方</a>
+	</div>
     </div>
   </div>
   <script>
