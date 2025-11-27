@@ -70,7 +70,6 @@
       border: 1px solid #d7ccc8;
       box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
     }
-
     .footer {
       position: absolute;
       bottom: 16px;
@@ -81,14 +80,19 @@
 
     .footer .start-link {
       display: inline-block;
-      font-size: 1.1em;
+      margin-right: 20px; /* 少し間隔を空ける */
+    }
+
+    .footer .info-link {
+      display: inline-block;
+      font-size: 1.0em;
       color: #6d4c41;
-      font-weight: bold;
       text-decoration: underline;
       cursor: pointer;
       transition: color 0.2s ease;
     }
-    .footer .start-link:hover { color: #c59f63; }
+    .footer .info-link:hover { color: #c59f63; }
+
   </style>
 </head>
 <body>
@@ -97,10 +101,9 @@
     <div id="inner">
       <div id="story"></div>
       <div id="footer" class="footer"></div>
-      <a href="https://claude.ai/public/artifacts/c48c5caf-02ac-4133-abcf-9c369fabe448" class="info-link" target="_blank">戦闘の仕方</a>
+      <a href="https://claude.ai/public/artifacts/c48c5caf-02ac-4133-abcf-9c369fabe448" class="info-link" target="_blank">戦い方</a>
     </div>
   </div>
-
   <script>
     const storyFile = "final_gamebook.txt";
     let paragraphs = [];
