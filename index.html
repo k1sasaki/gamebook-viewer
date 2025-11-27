@@ -53,11 +53,13 @@
     .dice {
       font-size: 1.4em;
     }
-    #rollBtn {
-      font-size: 0.9em;
-      padding: 2px 6px;
-      cursor: pointer;
-    }
+	#rollBtn {
+	  font-size: 1.0em;       /* 記号なので少し大きめに */
+	  padding: 0;             /* 余白をなくす */
+	  cursor: pointer;
+	  border: none;           /* 枠線を消す */
+	  background: none;       /* 背景色を消す */
+	}
 
     #inner {
       padding: 24px 40px;
@@ -150,7 +152,7 @@
     .close {
       position: absolute;
       top: 8px;
-      right: 32px; /* ←スクロールバーから離す */
+      right: 42px; /* ←スクロールバーから離す */
       font-size: 1.5em;
       font-weight: bold;
       color: #6d4c41;
@@ -166,7 +168,7 @@
       <span id="diceArea">
         <span class="dice" id="dice1">⚀</span>
         <span class="dice" id="dice2">⚀</span>
-        <button id="rollBtn">振る</button>
+        <button id="rollBtn">🔃</button>
       </span>
     </h2>
     <div id="inner">
@@ -185,7 +187,6 @@
       <iframe src="rules.html" class="modal-frame"></iframe>
     </div>
   </div>
-
 
 	<script>
 	  const storyFile = "final_gamebook.txt";
@@ -371,6 +372,6 @@
 	  }
 	</script>
 
-
 </body>
 </html>
+
