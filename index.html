@@ -207,7 +207,8 @@
 	      const titleLine = lines.find(l => l.startsWith("# "));
 	      if (titleLine) {
 	        const titleText = titleLine.replace(/^#\s*/, "");
-	        originalTitle = titleText;
+			document.title = titleText;
+ 		    originalTitle = titleText;
 	        document.getElementById("title").innerHTML =
 	          `${titleText}
 	           <span id="diceArea">
@@ -375,4 +376,5 @@
 
 </body>
 </html>
+
 
